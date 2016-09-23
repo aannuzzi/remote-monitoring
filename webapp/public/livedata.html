@@ -1,0 +1,339 @@
+<div class="stuff">
+  <!--<table>
+    <tbody>
+      <tr ng-repeat="val in voltage">
+        <td>{{val.time}}</td>
+        <td>{{val.battVolt}}</td>
+    </tbody>
+  </table>-->
+  <!--<div class="btn-group btn-group-sm text-center modify-time-period-controls">
+    <button type="button" class="btn btn-default active" onclick="avgData()">All Data</button>
+    <button type="button" class="btn btn-default" onclick="yesterdayData()">Yesterday</button>
+    <button type="button" class="btn btn-default" onclick="todayData()">Today</button>
+        <button type="button" class="btn btn-default" onclick="addData()">Add Data Point</button>
+
+  </div>-->
+
+  <!--<pre>{{charts}}</pre>
+
+  <pre>{{names}}</pre>-->
+
+
+  <div class="well well-sm">
+    <strong>Display</strong>
+    <div class="btn-group">
+      <a ng-click="listClicked()" id="list" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-th-list"></span>List</a> 
+      <a ng-click="gridClicked()" id="grid" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-th"></span>Grid</a>
+    </div>
+  </div>
+
+<!-- Modal for chart management -->
+<div class="modal fade" id="mChartModal" tabindex="-1" role="dialog" aria-labelledby="mChartModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">Manage Charts</h4>
+            </div>
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label for="charts-select">Saved Charts:</label>
+                      <select name="reg_email" id="charts-select" size="16" width="100%" ng-model="selectedChart" ng-options="chart as chart.title for chart in charts" ng-disabled="isNewChart || isEditingChart">
+                        <option ng-hide="true" value=""></option>
+                      </select>
+                    </div>
+
+
+                  </div>  
+                  <div class="col-sm-6" id="test">
+                    <form role="form">
+                      <div class="form-group">
+                        <label for="chart-title">Chart Title:</label>
+                        <input type="text" class="form-control" id="chart-title" ng-model="selectedChart.title" ng-disabled="!isNewChart && !isEditingChart">
+
+                        <p ng-hide="!chartErrors.title" class="error">This field is required</p>
+                      </div>
+                      <div class="form-group">
+                        <label for="chart-data">Chart Data:</label>
+                        <select name="chart-data" ng-model="selectedChart.dataCol" ng-options="data.dataCol as data.displayName for data in names" ng-disabled="!isNewChart && !isEditingChart">
+                        </select>
+                      </div>
+                        <div class="form-group">
+                          <input type="text" class="form-control" id="chart-data-col" ng-model="selectedChart.dataCol" ng-disabled="!isNewChart && !isEditingChart">
+                          <p ng-hide="!chartErrors.dataCol" class="error">This field is required</p>
+                        </div>
+                      
+                      <div class="form-group">
+                        <label for="chart-time">Date Ranges</label>
+                        <div class="radio">
+                          <label><input type="radio" name="chart-time" ng-model="selectedChart.time" value="weekly" ng-disabled="!isNewChart && !isEditingChart">Weekly Average</label>
+                        </div>
+                        <div class="radio">
+                          <label><input type="radio" name="chart-time" ng-model="selectedChart.time" value="daily" ng-disabled="!isNewChart && !isEditingChart">Daily Average</label>
+                        </div>
+                        <div class="radio">
+                          <label><input type="radio" name="chart-time" ng-model="selectedChart.time" value="hourly" ng-disabled="!isNewChart && !isEditingChart">Hourly Average</label>
+                        </div>
+                        <div class="radio">
+                          <label><input type="radio" name="chart-time" ng-model="selectedChart.time" value="yesterday" ng-disabled="!isNewChart && !isEditingChart">Yesterday</label>
+                        </div>
+                        <div class="radio">
+                          <label><input type="radio" name="chart-time" ng-model="selectedChart.time" value="today" ng-disabled="!isNewChart && !isEditingChart">Today</label>
+                        </div>
+                        <div class="radio">
+                          <label><input type="radio" name="chart-time" ng-model="selectedChart.time" value="live" ng-disabled="!isNewChart && !isEditingChart">Live</label>
+                        </div>
+                        <div class="form-group" ng-hide="selectedChart.time !== 'live'">
+                          <label for="live-points">Live Points</label>
+                          <input type="number" class="form-control" id="live-points" ng-model="selectedChart.livePoints" ng-disabled="!isEditingChart && !isNewChart">
+                          <p ng-hide="!chartErrors.livePoints" class="error">Please enter a value between 10-250.</p>
+                        </div>
+                        <p ng-hide="!chartErrors.time" class="error">This field is required</p>
+                      </div>
+                     </form>
+                    </div>
+                  </div>
+                </div>
+              <div class="row">
+                       <div class="form-group">
+
+                        <div class="col-sm-4">
+                          <button type="button" class="btn btn-default" ng-click="deleteChart()">Delete</button>
+                        </div>
+                        <div class="col-sm-4">
+                          <button type="button" class="btn btn-primary pull-center" ng-click="newChart()">New</button>
+                        </div>
+                        <div class="col-sm-4">
+                          <button type="button" class="btn btn-primary pull-right" ng-click="editChart()" ng-hide="isEditingChart || isNewChart" ng-disabled="selectedChart == null">Edit</button>
+
+                          <button type="button" class="btn btn-success pull-right" ng-click="saveChart()" ng-hide="!isEditingChart && !isNewChart">Save</button>
+                        </div>
+                      </div>
+
+               </div>
+            </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal for choosing data columns to Display Names -->
+<div class="modal fade" id="mDataModal" tabindex="-1" role="dialog" aria-labelledby="mDataModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">Manage Data</h4>
+            </div>
+            <div class="modal-body">
+              <div class="container-fluid">
+                <p class="error" ng-hide="!errors.unsaved">There is unsaved data, please save and try again</p>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <select name="data" id="chart-data" size="10" ng-model="selectedName" ng-options='data as (data.displayName + " => (" + (data.dataCol) + ")") for data in names' ng-selected='selectedName == data'ng-disabled="isEditing || isNewEntry">
+                        <option value="" ng-hide="true"></option>
+                      </select>
+                    </div>
+                  </div>  
+                  <div class="col-sm-6">
+                    <form role="form">
+                      <div class="form-group">
+                        <label for="display-name">Display Name:</label>
+                        <input type="text" class="form-control" id="display-name" ng-model="selectedName.displayName" ng-disabled="!isEditing && !isNewEntry" ng-required="required">
+                        <p ng-hide="!errors.name" class="error">This field is required</p>
+                      </div>
+                      <div class="form-group">
+                        <label for="data-col">Data Column:</label>
+                        <input type="text" class="form-control" id="data-col" ng-model="selectedName.dataCol" ng-disabled="!isEditing && !isNewEntry" ng-required="required">
+                        <p ng-hide="!errors.col" class="error">This field is required</p> 
+                        <p ng-hide="!errors.duplicate" class="error">There is already an entry for {{selectedName.dataCol}}. Please select a different column or edit the existing entry.</p>
+                      </div>
+                     </form>
+                    </div>
+                  </div>
+                    <div class="row">
+                       <div class="form-group">
+
+                        <div class="col-sm-4">
+                          <button type="button" class="btn btn-default" ng-click="deleteSelection()">Delete</button>
+                        </div>
+                        <div class="col-sm-4">
+                          <button type="button" class="btn btn-primary pull-center" ng-click="newEntry()">New</button>
+                        </div>
+                        <div class="col-sm-4">
+                          <button type="button" class="btn btn-primary pull-right" ng-click="editEntry()" ng-hide="isEditing || isNewEntry" ng-disabled="selectedName == null">Edit</button>
+
+                          <button type="button" class="btn btn-success pull-right" ng-click="saveEntry()" ng-hide="!isEditing && !isNewEntry">Save</button>
+                        </div>
+                      </div>
+
+                    </div>
+                </div>
+            </div>
+    </div>
+  </div>
+</div>
+<!--End Modal DIV-->
+
+<div id="charts" class="row list-group">
+</div>
+
+<div id="chart-container">
+</div>
+
+  <!--<script>
+   /* var socket = io("http://localhost:5000");
+    //var socket = io("http://71.84.26.152:5000");
+    socket.on("newData", function(data) {
+      addData(data);
+    });
+
+    function addData(data) {
+        if (processed_json !== undefined) {
+            console.log("here")
+            var chart = $("#container").highcharts();
+
+            console.log(data)
+
+            var time = data["time"]
+            var val = data["battVolt"]
+
+            console.log(time)
+            console.log(data)
+
+            var length = chart.series[0].length
+
+            if (time > processed_json[processed_json1.length - 1][0]) {
+              chart.series[0].addPoint([time, val], true, true);
+            } else {
+              console.log("ERROR: trying to add previous or duplicate data point")
+            }
+        }
+    }*/
+
+
+   $(function () {
+            $.getJSON('http://localhost:5000/fetchData/battVolt/live/250', function(data) {
+            //$.getJSON('http://71.84.26.152:5000/fetchData/battVolt/live', function(data) {
+                    // Populate series
+                    var processed_json1 = [];
+
+                    console.log(data)
+
+                    var dataPoints = data['data'];
+
+                    // highcharts expects data to be ascending but mongo gives descending to get the latest data
+                    for (i = (dataPoints.length - 1); i >= 0; i--){
+                        processed_json1.push([dataPoints[i]['time'], dataPoints[i]['battVolt']]);
+                    }
+                    console.log(processed_json1)
+                 
+                    // draw chart
+                    //$('#chart_container').append("<div id=\"c1\"></div>");
+                    $('#c1').highcharts({
+                    chart: {
+                        type: "spline"
+                    },
+                    title: {
+                        text: "Live Data"
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                          month: '%b %#d',
+                          year: '%G'
+                        },
+                        title: {
+                            text: 'Date'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: "Volts"
+                        },
+                        min: 0
+                    },
+                    series: [{
+                      name: 'Battery Voltage',
+                        data: processed_json1
+                    }]
+                }); 
+            });
+
+            $("button#submit").click(function(){
+                alert("btn clicked");
+            });
+
+
+            $.getJSON('http://localhost:5000/fetchData/battCur/live/100', function(data) {
+            //$.getJSON('http://71.84.26.152:5000/fetchData/battVolt/live', function(data) {
+                    // Populate series
+                    var processed_json2 = [];
+
+                    console.log(data)
+
+                    var dataPoints = data['data'];
+
+                    // highcharts expects data to be ascending but mongo gives descending to get the latest data
+                    for (i = (dataPoints.length - 1); i >= 0; i--){
+                        processed_json2.push([dataPoints[i]['time'], dataPoints[i]['battCur']]);
+                    }
+                    console.log(processed_json2)
+                 
+                    // draw chart
+                    //$('#chart_container').append("<div id=\"c2\"></div>");
+                    $('#c2').highcharts({
+                    chart: {
+                        type: "spline"
+                    },
+                    title: {
+                        text: "Live Data"
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                          second: '%l:%M:%S %P',
+                          minute: '%l:%M %P',
+                          hour: '%l:%M %P',
+                          day: '%b %e',
+                          week: '%b %e',
+                          month: '%b',
+                          year: '%Y'
+                        },
+                        title: {
+                            text: 'Date'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: "Amps"
+                        },
+                    },
+                    tooltip: {
+                      dateTimeLabelFormats: {
+                          second: '%l:%M:%S %P',
+                          minute: '%l:%M %P',
+                          hour: '%l:%M %P',
+                          day: '%b %e',
+                          week: '%b %e',
+                          month: '%b',
+                          year: '%Y'
+                        }
+                    },
+                    series: [{
+                      name: 'Battery Current',
+                        data: processed_json2
+                    }]
+                }); 
+            });
+
+        });
+
+  </script>-->
+
+</div>

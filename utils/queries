@@ -1,0 +1,25 @@
+db.demoCollection.aggregate([
+	{ $group: { 
+		_id: { 
+			year : {$year : "$isodate"}, 
+			month: {$month: "$isodate"}, 
+			day: {$dayOfMonth: "$isodate"} 
+		}, 
+		battVolt: {$avg: "$battVolt"}
+		}
+	}, {$sort: 
+		{'_id.year': 1, '_id.month':1, '_id.day':1}
+	}
+]);
+
+
+
+
+
+db.demoCollection.aggregate([
+	{ $group: { 
+		_id: Date.UTC({$year : "$isodate"}, {$month: "$isodate"}, {$dayOfMonth: "$isodate"}, 0, 0, 0), 
+		avgVolt: {$avg: "$battVolt"}
+		}
+	}
+]);

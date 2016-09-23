@@ -1,0 +1,162 @@
+<div class="stuff">
+	<!--<table>
+		<tbody>
+			<tr ng-repeat="val in voltage">
+				<td>{{val.time}}</td>
+				<td>{{val.battVolt}}</td>
+		</tbody>
+	</table>-->
+	<div class="btn-group btn-group-sm text-center modify-time-period-controls">
+		<button type="button" class="btn btn-default active" onclick="allData()">All Data</button>
+		<button type="button" class="btn btn-default" onclick="yesterdayData()">Yesterday</button>
+		<button type="button" class="btn btn-default" onclick="todayData()">Today</button>
+        <button type="button" class="btn btn-default" onclick="addData()">Add Data Point</button>
+
+	</div>
+	<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+
+
+	<script>
+    var processed_json;
+
+    function addData() {
+        console.log(processed_json)
+        if (processed_json !== undefined) {
+            console.log("here")
+            var chart=$("#container").highcharts();
+            var date = new Date()
+            var utc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+
+            if (processed_json.length <= 40) {
+                chart.series[0].addPoint([utc, (Math.random() * 3) + 12])
+            } else {
+                chart.series[0].addPoint([utc, (Math.random() * 3) + 12], true, true)
+            }
+        }
+    }
+
+    function todayData() {
+        //$.getJSON('http://localhost:5000/voltage?time=today',
+        $.getJSON('http://71.84.26.152:5000/voltage?time=today', function(data) {
+            var json = [];
+            for (i = 0; i < data.length; i++){
+                 json.push([data[i]['time'], +data[i]['battVolt']]);
+            }
+
+            var chart=$("#container").highcharts();
+            chart.series[0].setData(json);
+
+            processed_json = json
+            console.log(processed_json === json);
+        })
+    }
+
+    function yesterdayData() {
+        //$.getJSON('http://localhost:5000/voltage?time=yesterday',
+        $.getJSON('http://71.84.26.152:5000/voltage?time=yesterday', function(data) {
+            var json = [];
+            for (i = 0; i < data.length; i++){
+                 json.push([data[i]['time'], +data[i]['battVolt']]);
+            }
+
+            var chart=$("#container").highcharts();
+            chart.series[0].setData(json);
+
+            processed_json = json
+            console.log(processed_json === json);
+        })
+    }
+
+    function allData() {
+        //$.getJSON('http://localhost:5000/voltage', 
+        $.getJSON('http://71.84.26.152:5000/voltage',function(data) {
+            var json = [];
+            for (i = 0; i < data.length; i++){
+                 json.push([data[i]['time'], +data[i]['battVolt']]);
+            }
+
+            var chart=$("#container").highcharts();
+            chart.series[0].setData(json);
+
+            processed_json = json
+            console.log(processed_json === json);
+        })
+    }
+
+    function avgData() {
+        //$.getJSON('http://localhost:5000/voltage',
+        $.getJSON('http://71.84.26.152:5000/voltage', function(data) {
+            var json = []
+            console.log(data)
+            for (i = 0; i < data.length; i++){
+                var timeObj = data[i]['_id']
+                var time = Date.UTC(timeObj['year'], timeObj['month'] - 1, timeObj['day'], 0, 0, 0)
+                json.push([time, Math.round(100 * +data[i]['battVolt'])/100]);
+            }
+
+            var chart=$("#container").highcharts();
+            chart.series[0].setData(json);
+
+            processed_json = json
+            console.log(processed_json === json);
+        })
+    }
+
+
+
+
+
+
+    $('.modify-time-period-controls button').click(function() {
+        // change button state
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+
+
+
+	 $(function () {
+            processed_json = [];   
+            //$.getJSON('http://localhost:5000/voltage?time=yesterday',
+            $.getJSON('http://71.84.26.152:5000/voltage?time=yesterday', function(data) {
+                    // Populate series
+                    for (i = 0; i < data.length; i++){
+                        processed_json.push([data[i]['time'], +data[i]['battVolt']]);
+                    }
+                    console.log(processed_json)
+                 
+                    // draw chart
+                    $('#container').highcharts({
+                    chart: {
+                        type: "spline"
+                    },
+                    title: {
+                        text: "Today Data"
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                        	month: '%#d. %b',
+                        	year: '%b'
+                        },
+                        title: {
+                            text: 'Date'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: "Voltage"
+                        },
+                        min: 0
+                    },
+                    series: [{
+	                    name: 'Battery Voltage',
+                        data: processed_json
+                    }]
+                }); 
+            });
+        });
+
+	</script>
+
+</div>
